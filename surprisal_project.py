@@ -7,7 +7,7 @@ import json
 m = AutoHuggingFaceModel.from_pretrained('Cedille/fr-boris', model_class = 'gpt')
 
 
-zero_freq = [] #för att kika på vilka ord/typer av ord som inte förekommer i frekvenstabellen
+zero_freq = [] #en lista för att kika på vilka ord/typer av ord som INTE förekommer i frekvenstabellen
 
 
 ###listor för slutliga dict-values
@@ -48,7 +48,8 @@ def temp_stack(temp_list):
 	return(res["surprisal"])
 
 
-### Returnerar ons och durs för ISI och PRES från logfiles samt för tystnader från transitionsfilen och justerad via conv_onsets
+### Returnerar ons och durs för ISI och PRES med input från logfiles samt ons och durs för tystnader med input 
+### från transitionsfilen, tider justerade med conv_onsets
 def get_silence_ISI_PRES_ons_durs(conv_onsets, subjrun):
 	silence_durs_temp_h = []
 	silence_durs_temp_r = []
@@ -83,6 +84,7 @@ def get_silence_ISI_PRES_ons_durs(conv_onsets, subjrun):
 				presentation_onsets.append(float(log_l[0]))
 				presentation_durations.append(float(log_l[1]))
 
+### Följande för att kolla listlängderna
 #	print('silence durs, ons listlengths: ', len(silence_durs_temp_h), len(silence_durs_temp_r), len(silence_ons_temp_h), len(silence_ons_temp_r))
 #	print('listlängder isi och fixation: ', len(fixation_onsets), len(fixation_durations), len(presentation_onsets), len(presentation_durations))
 
@@ -90,7 +92,8 @@ def get_silence_ISI_PRES_ons_durs(conv_onsets, subjrun):
 	fixation_durations, fixation_onsets, presentation_durations, presentation_onsets)
 
 
-### Returnerar en dict med names, ons, durs, freqs, surps för varje currentLine ackumulerad per subjrun, returnerar också conv-onsets
+### Returnerar en dict med names, ons, durs, freqs, surps för varje currentLine ackumulerad per 
+### subjrun (utifrån en dictionary från tidigare), returnerar också conv-onsets
 def get_surprisals_freqs_durs_ons():
 	print('subjrun_line: ', subjrun_line)
 
@@ -112,7 +115,8 @@ def get_surprisals_freqs_durs_ons():
 	utterance_words_rejoined = ' '.join(utterance_words)
 #	print('utterance_words: ', utterance_words)
 
-	### tar fram och ackumulerar surprisals fr vardera ord i ett yttrande
+	### följande block tar fram och ackumulerar surprisals för vardera ord i ett yttrande 
+	### (via funktionen temp_stack, där surprisals beräknas)
 	temp_list = []
 	list_of_tuples = []
 	utterance_surprisal = m.surprise(utterance_words_rejoined)
@@ -129,7 +133,7 @@ def get_surprisals_freqs_durs_ons():
 			else:
 				temp_list.append(token_tuple)
 
-	### tar fram konversationernas onsets (för att addera till onset för vardera ord)
+	### följande block tar fram konversationernas onsets (för att addera till onset för vardera ord-event samt tystnad-event)
 	with open('logfiles/sub-' + subj + '_task-convers_run-0' + run + '_events.tsv') as logfile:
 		conv_onsets = []
 		for log_line in logfile:
@@ -139,17 +143,17 @@ def get_surprisals_freqs_durs_ons():
 
 #		print('conv_onset: ', conv_onsets)
 
-	#### lägger till floa onset för current conv och därefter vardera ackumulera approximerad ord-onset
+	#### följande block ackumulerar och lägger till alla onsets och durs för ordeventen i en lista
 	current_onset = float(subjrun_line[4]) + float(conv_onsets[int(subjrun_line[3]) -1])
 	mean_duration = float(subjrun_line[5])/int(subjrun_line[8])
 	for i, item in enumerate(utterance_words):
 		word_durations.append(mean_duration)
 		word_onsets.append(current_onset)
 		current_onset += mean_duration
-#	print('ackumulerad current_onset efetr varje yttrande: ', word_onsets, 'antal ackumulerade onsets: ', len(word_onsets))
+#	print('ackumulerad current_onset efter varje yttrande: ', word_onsets, 'antal ackumulerade onsets: ', len(word_onsets))
 
 
-	#### matchar frekv från frekvenslista för vardera ord (baserat på ordindelningar fr vardera yttrande)
+	#### följande block finner ordfrekvenser för vardera ord i en frekvenslista (vocab_cs)
 	with open('1gms/vocab_cs') as frequency_f:
 		frequency_f  = frequency_f.readlines()
 #		print('längd av freklistan: ', len(frequency_f))
@@ -167,13 +171,12 @@ def get_surprisals_freqs_durs_ons():
 					word_frequency.append(float(0))
 #					print('ord som inte finns i listan? /inte fått manuellt tilldelat värde', w)
 
-					#### #om man vill kika på vilka ord som har sk noll-frekvens
+					####om man vill kika på vilka ord som har sk noll-frekvens
 #					zero_freq.append(w)
 #		print(zero_freq)
 #
 
 #	print('listlängder: ', len(word_durations), len(word_onsets), len(word_frequency), len(word_surprisal))
-
 
 	mdic = {'names':[['ISI'], ['PRES'], ['comp_h'], ['comp_r'], ['prod_h'], ['prod_r'], ['silence_h'], ['silence_r']], \
 	'durations': [isi_durations, pres_durations, word_durations_comp_h, word_durations_comp_r, word_durations_prod_h, word_durations_prod_r, \
@@ -182,7 +185,7 @@ def get_surprisals_freqs_durs_ons():
 	'pmod' : {'comp_h' : [word_frequency_comp_h, word_surprisals_comp_h], 'comp_r' : [word_frequency_comp_r, word_surprisals_comp_r], \
 	'prod_h' : [word_frequency_prod_h, word_surprisals_prod_h], 'prod_r' : [word_frequency_prod_r, word_surprisals_prod_r]}}
 
-
+###Följande block sorterar alla ord-event i rätt lista (som finns i dicten) baserat på human/robot och comprehension/production
 	if subjrun_line[1] == 'human' and subjrun_line[7] == '1' and subjrun_line[6] == '0':
 
 		mdic['durations'][2].extend(word_durations)
@@ -232,10 +235,11 @@ with open('modalities.csv') as f:
 		if line != '' and line != '\n':
 			currentLine = line.split(',')
 
-			### LIte grejer för att testa pp mindre data
+			###  Vid behov för att testa på mindre datamängder
 #			if currentLine[0] in ['subj-01', 'subj-02'] and currentLine[1] == 'human' and currentLine[2] == '3' and currentLine[3] == '6':
 #			if currentLine[1] == 'human' and currentLine[2] == '3' and currentLine[3] == '6': #bara för å minska testdata
 
+			### följande block skapar en dict där subjrun är key och en lista av alla yttranden är value
 			run = currentLine[2]
 			subj = currentLine[0][-2:]
 			if subj + run in subjrun_dict:
@@ -247,6 +251,7 @@ with open('modalities.csv') as f:
 #			print(currentLine)
 #	print(subjrun_dict.keys())
 
+	### Följande block går igenom subjrun-dict (innehållande alla yttranden sorterade på subjrun) och hämtar event-värden
 	for subjrun_utterance_list in subjrun_dict.values(): #för varje samling (lista)av yttrande(sträng m kolumner) per subjrun
 #		print('utterance_list: ', subjrun_utterance_list)
 		for subjrun_line in subjrun_utterance_list:
@@ -287,7 +292,7 @@ with open('modalities.csv') as f:
 		print(mdic)
 
 
-
+###Följande skapar en json-fil med alla dictsen (BÄTTRE MED DIREKt til matfile, ju)
 		with open("json_dicts_140423/mdic_" + subjrun + ".json", "w") as fp:
 			json.dump(mdic, fp)
 
@@ -295,7 +300,7 @@ with open('modalities.csv') as f:
 #		mdic_ = json.load(dicname)
 
 
-
+####
 #		filename = '/home/johanna/surprisal_project/matfiles/ons_durs_freqs_surps_subjrun' + subjrun + '.mat'
 #		savemat(filename, mdic)
 #		savemat(filename, dic)
