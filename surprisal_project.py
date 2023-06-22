@@ -153,7 +153,7 @@ def get_surprisals_freqs_durs_ons():
 #	print('ackumulerad current_onset efter varje yttrande: ', word_onsets, 'antal ackumulerade onsets: ', len(word_onsets))
 
 
-	#### följande block finner ordfrekvenser för vardera ord i en frekvenslista (vocab_cs)
+	#### följande block finner ordfrekvenser för vardera ord i frekvenslistan vocab_cs
 	with open('1gms/vocab_cs') as frequency_f:
 		frequency_f  = frequency_f.readlines()
 #		print('längd av freklistan: ', len(frequency_f))
@@ -185,7 +185,7 @@ def get_surprisals_freqs_durs_ons():
 	'pmod' : {'comp_h' : [word_frequency_comp_h, word_surprisals_comp_h], 'comp_r' : [word_frequency_comp_r, word_surprisals_comp_r], \
 	'prod_h' : [word_frequency_prod_h, word_surprisals_prod_h], 'prod_r' : [word_frequency_prod_r, word_surprisals_prod_r]}}
 
-###Följande block sorterar alla ord-event i rätt lista (som finns i dicten) baserat på human/robot och comprehension/production
+###Följande block sorterar alla ord-event i rätt lista (som finns i dicten ovan, alltså mdic) baserat på human/robot och comprehension/production
 	if subjrun_line[1] == 'human' and subjrun_line[7] == '1' and subjrun_line[6] == '0':
 
 		mdic['durations'][2].extend(word_durations)
@@ -239,7 +239,7 @@ with open('modalities.csv') as f:
 #			if currentLine[0] in ['subj-01', 'subj-02'] and currentLine[1] == 'human' and currentLine[2] == '3' and currentLine[3] == '6':
 #			if currentLine[1] == 'human' and currentLine[2] == '3' and currentLine[3] == '6': #bara för å minska testdata
 
-			### följande block skapar en dict där subjrun är key och en lista av alla yttranden är value
+			### följande block skapar en dict där subjrun är key och en lista av alla yttranden för detta subjrun är value
 			run = currentLine[2]
 			subj = currentLine[0][-2:]
 			if subj + run in subjrun_dict:
@@ -257,7 +257,8 @@ with open('modalities.csv') as f:
 		for subjrun_line in subjrun_utterance_list:
 #			print('subj: ', subjrun_line[0][-2:])
 
-			#### THe follwing two lines to remove one-word utterances and short utterances 
+			#### Följande rader tar bort en-ordsyttranden och yttranden under 300ms
+			#### NOTERA: HÄR FINNS TILLÄGG GJORDA INFÖR ANDRA KÖRNINGEN
 			if len(subjrun_line[9].split(' ')) == 1 or float(subjrun_line[5]) < 0.3:
 				continue
 			else:
@@ -300,7 +301,7 @@ with open('modalities.csv') as f:
 #		mdic_ = json.load(dicname)
 
 
-####
+####  CHANGE PATH
 #		filename = '/home/johanna/surprisal_project/matfiles/ons_durs_freqs_surps_subjrun' + subjrun + '.mat'
 #		savemat(filename, mdic)
 #		savemat(filename, dic)
