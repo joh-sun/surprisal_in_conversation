@@ -293,7 +293,7 @@ with open('modalities.csv') as f:
 
 
 ###Följande skapar en json-fil med alla dictsen (BÄTTRE MED DIREKt til matfile, ju)
-		with open("json_dicts_140423/mdic_" + subjrun + ".json", "w") as fp:
+		with open("json_dicts/mdic_" + subjrun + ".json", "w") as fp:
 			json.dump(mdic, fp)
 
 #		dicname = open("mdic_.json")
