@@ -259,7 +259,8 @@ with open('modalities.csv') as f:
 
 			#### Följande rader tar bort en-ordsyttranden och yttranden under 300ms
 			#### NOTERA: HÄR FINNS TILLÄGG GJORDA INFÖR ANDRA KÖRNINGEN
-			if len(subjrun_line[9].split(' ')) == 1 or float(subjrun_line[5]) < 0.3:
+			#if len(subjrun_line[9].split(' ')) == 1 or float(subjrun_line[5]) < 0.3: # REMOVE 1-word utterances & short utterances
+			if float(subjrun_line[5]) < 0.3: 
 				continue
 			else:
 				mdic, conv_onsets  = get_surprisals_freqs_durs_ons()
