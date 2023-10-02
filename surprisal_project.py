@@ -1,4 +1,3 @@
-import torch
 from surprisal import AutoHuggingFaceModel
 from scipy.io import savemat
 import numpy
