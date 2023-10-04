@@ -38,11 +38,13 @@ class SurprisalDict:
             surp_dict[subjrun] = {}
             for line in modfile[subjrun]:
                 utterance = line[5]
-
+                
                 if line[0] == 'human' and len(utterance) > 0:
+                    line = ','.join(line)
                     surprisal_data = self.m.surprise(utterance)
                     surp_dict[subjrun][line] = surprisal_data
                 else: 
+                    line = ','.join(line)
                     surp_dict[subjrun][line] = None
 
         return surp_dict
