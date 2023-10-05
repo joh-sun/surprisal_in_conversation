@@ -36,12 +36,14 @@ class SurprisalDict:
         surp_dict = {}
         for subjrun in modfile:
             surp_dict[subjrun] = {}
+
             for line in modfile[subjrun]:
                 utterance = line[5]
                 
                 if line[0] == 'human' and len(utterance) > 0:
                     line = ','.join(line)
-                    surprisal_data = self.m.surprise(utterance)
+                    surprisal_data = json.dumps(self.m.surprise(utterance), indent=4, sort_keys=True, default=str).strip('[').strip(']').split()[1:-1]
+                    surprisal_data = surprisal_data[len(surprisal_data)//2+1:]
                     surp_dict[subjrun][line] = surprisal_data
                 else: 
                     line = ','.join(line)
